@@ -45,6 +45,7 @@ class LoadAction(private val file: File) : AbstractAction("Load") {
                 connectionEntry.port = jsonNode.get("port").asInt()
                 connectionEntry.portforwarding = jsonNode.get("portforwarding")?.asText()
                 connectionEntry.identity = jsonNode.get("identity")?.asText()
+                connectionEntry.httpProxy = jsonNode.get("httpProxy")?.asText()
                 return node
             }
             else -> {

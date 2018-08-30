@@ -21,6 +21,8 @@ class ConnectionEntry(override var name: String = "New Connection", var hostname
     var identity: String? = null
         get() = if (field.isNullOrBlank()) null else field
 
+    var httpProxy: String? = null
+        get() = if (field.isNullOrBlank()) null else field
 
     override fun toString(): String {
         return name

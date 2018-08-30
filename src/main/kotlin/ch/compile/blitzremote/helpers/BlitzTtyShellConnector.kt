@@ -1,10 +1,7 @@
 package ch.compile.blitzremote.helpers
 
 import ch.compile.blitzremote.model.ConnectionEntry
-import com.jcraft.jsch.ChannelShell
-import com.jcraft.jsch.JSch
-import com.jcraft.jsch.JSchException
-import com.jcraft.jsch.Session
+import com.jcraft.jsch.*
 import com.jediterm.ssh.jsch.JSchShellTtyConnector
 
 class BlitzTtyShellConnector(private val connectionEntry: ConnectionEntry) : JSchShellTtyConnector(connectionEntry.hostname, connectionEntry.port, connectionEntry.username, connectionEntry.password) {
@@ -17,6 +14,9 @@ class BlitzTtyShellConnector(private val connectionEntry: ConnectionEntry) : JSc
 
     override fun openChannel(session: Session): ChannelShell {
         sessionAvailableListeners.forEach { it.onSessionAvailable(session) }
+        if (connectionEntry.httpProxy != null) {
+            session.setProxy(ProxyHTTP(connectionEntry.httpProxy))
+        }
         return super.openChannel(session)
     }
 
@@ -34,7 +34,6 @@ class BlitzTtyShellConnector(private val connectionEntry: ConnectionEntry) : JSc
             } catch (e: JSchException) {
                 System.err.println("Error adding identity: " + connectionEntry.identity)
             }
-
         }
     }
 }
