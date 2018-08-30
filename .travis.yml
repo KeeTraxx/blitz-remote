@@ -2,5 +2,7 @@ language: java
 jdk:
   - openjdk8
 
+install: echo "skipped install phase - because kotlin fails"
+
 script: ./gradlew build --continue
 
