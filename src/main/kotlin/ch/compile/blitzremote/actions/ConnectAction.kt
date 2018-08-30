@@ -6,17 +6,26 @@ import ch.compile.blitzremote.helpers.BlitzTtyShellConnector
 import ch.compile.blitzremote.helpers.SessionAvailableListener
 import ch.compile.blitzremote.model.ConnectionEntry
 import ch.compile.blitzremote.settings.BlitzRemoteSettingsProvider
+import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.Session
 import com.jediterm.ssh.jsch.JSchShellTtyConnector
+import org.slf4j.LoggerFactory
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
 import kotlin.concurrent.thread
 
 class ConnectAction(val connectionEntry: ConnectionEntry) : AbstractAction("Connect..."), SessionAvailableListener {
+    companion object {
+        val LOG = LoggerFactory.getLogger(this::class.java)!!
+    }
     override fun onSessionAvailable(session: Session) {
         System.out.println("Connected to " + session.host)
         if (connectionEntry.portforwarding != null) {
-            session.setPortForwardingL(connectionEntry.portforwarding)
+            try {
+                session.setPortForwardingL(connectionEntry.portforwarding)
+            } catch(e:JSchException) {
+                LOG.warn("Can't bind port! Ignoring port forward...", e)
+            }
         }
     }
 

@@ -1,28 +1,38 @@
 package ch.compile.blitzremote.actions
 
+import ch.compile.blitzremote.BlitzRemote
+import ch.compile.blitzremote.FILE
 import ch.compile.blitzremote.helpers.BlitzObjectMapper
 import ch.compile.blitzremote.model.*
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
+import org.slf4j.LoggerFactory
 import java.awt.event.ActionEvent
 import java.io.File
 import javax.swing.AbstractAction
+import javax.swing.JOptionPane
 
 class LoadAction(private val file: File) : AbstractAction("Load") {
+    companion object {
+        val LOG = LoggerFactory.getLogger(this::class.java)
+    }
+
     override fun actionPerformed(p0: ActionEvent?) {
-
-        val c = BlitzObjectMapper.readTree(file)
-        if (c.isObject) {
-            System.out.println(c)
-            // ConnectionModel.setRoot(root)
-            val root = parse(c)
-
-            System.out.println(root)
-
-            ConnectionModel.setRoot(root)
-
+        if (file.exists()) {
+            FILE = file
+            LOG.debug("Loading $file")
+            try {
+                val c = BlitzObjectMapper.readTree(file)
+                if (c.isObject) {
+                    val root = parse(c)
+                    ConnectionModel.setRoot(root)
+                }
+            } catch (e: Exception) {
+                JOptionPane.showMessageDialog(BlitzRemote.instance, "Couldn't parse file: ${file.absoluteFile}", "Blitz Remote ERROR", JOptionPane.ERROR_MESSAGE)
+            }
+        } else {
+            JOptionPane.showMessageDialog(BlitzRemote.instance, "File ${file.absoluteFile} doesn't exist!", "Blitz Remote ERROR", JOptionPane.ERROR_MESSAGE)
         }
-
     }
 
     fun parse(jsonNode: JsonNode): AbstractBlitzTreeNode? {

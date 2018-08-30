@@ -8,34 +8,26 @@ import ch.compile.blitzremote.components.TabbedSSHPanel
 import ch.compile.blitzremote.model.AbstractBlitzTreeNode
 import org.apache.logging.log4j.util.Strings
 import java.awt.Dimension
+import java.awt.EventQueue
 import java.io.File
 import javax.swing.*
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
 
 var FILE = File(Strings.join(listOf(System.getProperty("user.home"), ".config", "blitz-remote", "connections.json"), File.separatorChar))
+    set(value) {
+        BlitzRemote.instance?.title = "blitz-remote ${value.absolutePath}"
+    }
 
 class BlitzRemote : JFrame("BlitzRemote") {
     companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
-            if (!FILE.parentFile.exists()) {
-                FILE.parentFile.mkdirs()
-            } else {
-                LoadAction(FILE).actionPerformed(null)
-            }
-            BlitzRemote()
-        }
+        var instance : BlitzRemote? = null
     }
-
     private val leftSplitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, true, JScrollPane(ConnectionSelector), JPanel())
     private val mainSplitPane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, leftSplitPane, TabbedSSHPanel)
-
-
-
-
     init {
+        instance = this
+        this.iconImage = ImageIcon(this.javaClass.classLoader.getResourceAsStream("icon.png").readBytes()).image
         this.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
 
         this.isVisible = true
@@ -66,3 +58,17 @@ class BlitzRemote : JFrame("BlitzRemote") {
     }
 }
 
+fun main(args: Array<String>) {
+    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
+
+    EventQueue.invokeLater {
+        BlitzRemote()
+        if (!FILE.parentFile.exists()) {
+            FILE.parentFile.mkdirs()
+        } else {
+            if (FILE.exists()) {
+                LoadAction(FILE).actionPerformed(null)
+            }
+        }
+    }
+}
