@@ -19,7 +19,7 @@ version '1.0-SNAPSHOT'
 apply plugin: 'application'
 apply plugin: 'kotlin'
 
-mainClassName = 'ch.compile.blitzremote.BlitzRemote'
+mainClassName = 'ch.compile.blitzremote.BlitzRemoteKt'
 
 repositories {
     mavenCentral()
@@ -50,3 +50,14 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+task bigJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Version': version,
+                'Main-Class': mainClassName
+    }
+    baseName = "${project.name}-standalone"
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+build.dependsOn bigJar
