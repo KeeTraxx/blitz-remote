@@ -20,7 +20,7 @@ class PropertyEditor(blitzTreeNode: AbstractBlitzTreeNode) : JTable(PropertyEdit
         val m = this.model as PropertyEditorTableModel
         val prop = m.getPropertyTypeAt(row)
         val useCellRenderer = prop.findAnnotation<UseCellRenderer>()
-        return if(useCellRenderer != null) {
+        return if (useCellRenderer != null) {
             return useCellRenderer.value.createInstance()
         } else {
             super.getCellRenderer(row, column)

@@ -13,7 +13,6 @@ open class CloseAction(private val terminal: BlitzTerminal) : AbstractAction("Cl
     override fun actionPerformed(p0: ActionEvent?) {
         LOG.info("Closing terminal ${terminal.connectionEntry.name} (${terminal.connectionEntry.hostname})...")
         terminal.close()
-
     }
 
 }

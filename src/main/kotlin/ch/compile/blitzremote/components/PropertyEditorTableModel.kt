@@ -9,7 +9,7 @@ class PropertyEditorTableModel(private val blitzTreeNode: AbstractBlitzTreeNode)
     private var members = blitzTreeNode.userObject::class.declaredMemberProperties.filterIsInstance<KMutableProperty<*>>()
 
     init {
-        System.out.println("INIT Table Model")
+
     }
 
     fun getPropertyTypeAt(row: Int): KMutableProperty<*> {
@@ -43,4 +43,6 @@ class PropertyEditorTableModel(private val blitzTreeNode: AbstractBlitzTreeNode)
     override fun isCellEditable(row: Int, column: Int): Boolean {
         return column == 1
     }
+
+
 }

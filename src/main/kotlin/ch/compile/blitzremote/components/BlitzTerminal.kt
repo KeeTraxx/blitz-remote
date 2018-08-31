@@ -24,16 +24,16 @@ class BlitzTerminal(val connectionEntry: ConnectionEntry) : JediTermWidget(Blitz
         this.ttyConnector = jSchShellTtyConnector
         this.start()
 
-        this.addConnectionListener(object:ConnectionListener{
+        this.addConnectionListener(object : ConnectionListener {
             override fun onConnectionStateChanged(isConnected: Boolean) {
-                if(!isConnected) {
+                if (!isConnected) {
                     TabbedSSHPanel.remove(this@BlitzTerminal)
                 }
             }
         })
 
         thread(start = true) {
-            while(watchConnection) {
+            while (watchConnection) {
                 Thread.sleep(100)
                 if (isConnected != jSchShellTtyConnector.isConnected) {
                     isConnected = jSchShellTtyConnector.isConnected
@@ -52,6 +52,7 @@ class BlitzTerminal(val connectionEntry: ConnectionEntry) : JediTermWidget(Blitz
         LOG.debug("Close has been called on ${connectionEntry.name}")
         watchConnection = false
         super.close()
+        TabbedSSHPanel.remove(this)
     }
 
 }

@@ -1,21 +1,23 @@
 package ch.compile.blitzremote.components
 
 import ch.compile.blitzremote.actions.CloseAction
-import sun.java2d.loops.Blit
+import com.google.common.io.Resources
+import org.slf4j.LoggerFactory
 import java.awt.Component
 import java.awt.FlowLayout
-import java.awt.Insets
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 
-class CloseableTab(val component: BlitzTerminal) : JPanel(FlowLayout(FlowLayout.LEFT, 5, 0)), MouseListener {
-
+class CloseableTab(var component: BlitzTerminal) : JPanel(FlowLayout(FlowLayout.LEFT, 5, 0)), MouseListener {
+    companion object {
+        val LOG = LoggerFactory.getLogger(this::class.java)!!
+    }
 
     private val label = JLabel(component.connectionEntry.name)
 
-    private val close = JButton(CloseTabAction(component))
+    private val close = JLabel(ImageIcon(Resources.getResource("icons/icon_close.png")))
 
     private val contextMenu = ContextMenu(component)
 
@@ -29,12 +31,9 @@ class CloseableTab(val component: BlitzTerminal) : JPanel(FlowLayout(FlowLayout.
         label.insets.set(0, 0, 0, 0)
         this.add(label)
 
-        close.border = EmptyBorder(4, 4, 4, 4)
-        close.margin = Insets(0, 0, 0, 0)
-        close.insets.set(0, 0, 0, 0)
-        close.isBorderPainted = false
-
         this.addMouseListener(this)
+
+        close.addMouseListener(this)
 
         this.add(close)
     }
@@ -44,20 +43,20 @@ class CloseableTab(val component: BlitzTerminal) : JPanel(FlowLayout(FlowLayout.
     override fun mouseEntered(p0: MouseEvent?) {}
 
     override fun mouseClicked(mouseEvent: MouseEvent) {
+        if (SwingUtilities.isLeftMouseButton(mouseEvent) && mouseEvent.source == close) {
+            LOG.debug("Close button on tab clicked.")
+            CloseAction(component).actionPerformed(null)
+        }
+
         if (SwingUtilities.isRightMouseButton(mouseEvent)) {
-            contextMenu.show(this, mouseEvent.x, mouseEvent.y)
+            LOG.debug("Showing context menu...")
+            contextMenu.show(mouseEvent.source as Component, mouseEvent.x, mouseEvent.y)
         }
     }
 
     override fun mouseExited(p0: MouseEvent?) {}
 
     override fun mousePressed(p0: MouseEvent?) {}
-
-    class CloseTabAction(component: Component) : CloseAction(component as BlitzTerminal) {
-        init {
-            this.putValue("Name", "❌")
-        }
-    }
 
     class ContextMenu(component: Component) : JPopupMenu("TabContextMenu") {
         init {
