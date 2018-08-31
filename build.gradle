@@ -15,7 +15,7 @@ buildscript {
 group 'ch.compile'
 
 if (project.hasProperty("overrideVersion")) {
-    version project.overrideVersion
+    version project.overrideVersion ?: "latest"
 } else {
     version '0.1-SNAPSHOT'
 }
