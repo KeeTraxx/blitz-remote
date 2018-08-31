@@ -14,13 +14,13 @@ import javax.swing.JOptionPane
 
 class LoadAction(private val file: File) : AbstractAction("Load") {
     companion object {
-        val LOG = LoggerFactory.getLogger(this::class.java)
+        val LOG = LoggerFactory.getLogger(this::class.java)!!
     }
 
     override fun actionPerformed(p0: ActionEvent?) {
         if (file.exists()) {
             FILE = file
-            LOG.debug("Loading $file")
+            LOG.info("Loading $file...")
             try {
                 val c = BlitzObjectMapper.readTree(file)
                 if (c.isObject) {
@@ -35,7 +35,7 @@ class LoadAction(private val file: File) : AbstractAction("Load") {
         }
     }
 
-    fun parse(jsonNode: JsonNode): AbstractBlitzTreeNode? {
+    private fun parse(jsonNode: JsonNode): AbstractBlitzTreeNode? {
         when (jsonNode.get("type").asText()) {
             "ch.compile.blitzremote.model.ConnectionFolder" -> {
                 val node = ConnectionFolderTreeNode(jsonNode.get("name").asText())
