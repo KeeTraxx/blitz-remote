@@ -1,11 +1,10 @@
 package ch.compile.blitzremote.components
 
 import ch.compile.blitzremote.actions.CloseAction
+import java.awt.Component
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
-import javax.swing.JPopupMenu
-import javax.swing.JTabbedPane
-import javax.swing.SwingUtilities
+import javax.swing.*
 import javax.swing.plaf.TabbedPaneUI
 
 object TabbedSSHPanel : JTabbedPane() {
@@ -49,5 +48,12 @@ object TabbedSSHPanel : JTabbedPane() {
             }
 
         })
+    }
+
+    fun add(title: String, blitzTerminal: BlitzTerminal): Component {
+        super.add(title, blitzTerminal)
+        val index = indexOfComponent(blitzTerminal)
+        setTabComponentAt(index, CloseableTab(blitzTerminal))
+        return blitzTerminal
     }
 }

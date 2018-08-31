@@ -31,14 +31,15 @@ class ConnectAction(val connectionEntry: ConnectionEntry) : AbstractAction("Conn
 
     override fun actionPerformed(p0: ActionEvent?) {
         System.out.println("Would connect to " + connectionEntry.hostname)
-        val terminal = BlitzTerminal(BlitzRemoteSettingsProvider())
+        val terminal = BlitzTerminal(BlitzRemoteSettingsProvider(), connectionEntry)
         val ttyConnector = BlitzTtyShellConnector(connectionEntry)
 
         ttyConnector.addSessionAvailableListener(this)
 
         terminal.ttyConnector = ttyConnector
 
-        TabbedSSHPanel.add(connectionEntry.toString(), terminal)
+        TabbedSSHPanel.add(connectionEntry.name, terminal)
+
         terminal.start()
 
         thread(start = true) {
