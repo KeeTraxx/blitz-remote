@@ -4,6 +4,8 @@ jdk:
 
 script: ./gradlew build -PoverrideVersion=${BUILDTAG} --continue
 
+sudo: true
+
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
