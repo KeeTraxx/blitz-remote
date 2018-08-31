@@ -22,21 +22,10 @@ class ConnectAction(private val connectionEntry: ConnectionEntry) : AbstractActi
     override fun actionPerformed(p0: ActionEvent?) {
         LOG.info("Connecting to ${connectionEntry.hostname}...")
         val terminal = BlitzTerminal(connectionEntry)
-        val ttyConnector = BlitzTtyShellConnector(connectionEntry)
-
-        terminal.ttyConnector = ttyConnector
 
         TabbedSSHPanel.add(terminal)
 
-        terminal.start()
 
-        thread(start = true) {
-            val connector = terminal.ttyConnector as JSchShellTtyConnector
-            while (!connector.isConnected) Thread.sleep(100)
-            while (connector.isConnected) Thread.sleep(100)
-
-            TabbedSSHPanel.remove(terminal)
-        }
     }
 
 }
