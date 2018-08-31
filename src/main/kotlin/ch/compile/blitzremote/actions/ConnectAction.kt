@@ -14,27 +14,15 @@ import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
 import kotlin.concurrent.thread
 
-class ConnectAction(val connectionEntry: ConnectionEntry) : AbstractAction("Connect..."), SessionAvailableListener {
+class ConnectAction(private val connectionEntry: ConnectionEntry) : AbstractAction("Connect...") {
     companion object {
         val LOG = LoggerFactory.getLogger(this::class.java)!!
     }
-    override fun onSessionAvailable(session: Session) {
-        System.out.println("Connected to " + session.host)
-        if (connectionEntry.portforwarding != null) {
-            try {
-                session.setPortForwardingL(connectionEntry.portforwarding)
-            } catch(e:JSchException) {
-                LOG.warn("Can't bind port! Ignoring port forward...", e)
-            }
-        }
-    }
 
     override fun actionPerformed(p0: ActionEvent?) {
-        System.out.println("Would connect to " + connectionEntry.hostname)
-        val terminal = BlitzTerminal(BlitzRemoteSettingsProvider(), connectionEntry)
+        LOG.info("Connecting to ${connectionEntry.hostname}...")
+        val terminal = BlitzTerminal(connectionEntry)
         val ttyConnector = BlitzTtyShellConnector(connectionEntry)
-
-        ttyConnector.addSessionAvailableListener(this)
 
         terminal.ttyConnector = ttyConnector
 
@@ -44,14 +32,8 @@ class ConnectAction(val connectionEntry: ConnectionEntry) : AbstractAction("Conn
 
         thread(start = true) {
             val connector = terminal.ttyConnector as JSchShellTtyConnector
-            while (!connector.isConnected) {
-                Thread.sleep(100)
-            }
-
-            while (connector.isConnected) {
-
-                Thread.sleep(100)
-            }
+            while (!connector.isConnected) Thread.sleep(100)
+            while (connector.isConnected) Thread.sleep(100)
 
             TabbedSSHPanel.remove(terminal)
         }
