@@ -4,7 +4,7 @@ jdk:
 
 before_script: env
 
-script: ./gradlew build -PoverrideVersion=${BUILDTAG} --continue
+script: ./gradlew build -PoverrideVersion=${TRAVIS_TAG} --continue
 
 sudo: true
 
@@ -13,10 +13,9 @@ after_script: find build/distributions; find build/libs
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
-  file_glob: true
   file:
-    - "build/distributions/blitz-remote-${BUILDTAG}.zip"
-    - "build/libs/blitz-remote-${BUILDTAG}.jar"
+    - "build/distributions/blitz-remote-${TRAVIS_TAG}.zip"
+    - "build/libs/blitz-remote-${TRAVIS_TAG}.jar"
   skip_cleanup: true
   on:
     tags: true
