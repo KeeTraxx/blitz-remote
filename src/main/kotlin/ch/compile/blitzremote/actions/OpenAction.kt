@@ -10,11 +10,11 @@ import javax.swing.filechooser.FileNameExtensionFilter
 
 class OpenAction : AbstractAction("Open...") {
     companion object {
-        val LOG = LoggerFactory.getLogger(OpenAction.javaClass)!!
+        val LOG = LoggerFactory.getLogger(this::class.java)!!
     }
 
     override fun actionPerformed(p0: ActionEvent?) {
-        LOG.debug("Opening FileChooser")
+        LOG.debug("Opening FileChooser...")
         val folder = JFileChooser(FILE.parentFile)
         folder.fileFilter = FileNameExtensionFilter("JSON files", "json")
         folder.fileSelectionMode = JFileChooser.FILES_ONLY
