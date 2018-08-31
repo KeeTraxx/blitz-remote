@@ -38,7 +38,7 @@ class ConnectAction(val connectionEntry: ConnectionEntry) : AbstractAction("Conn
 
         terminal.ttyConnector = ttyConnector
 
-        TabbedSSHPanel.add(connectionEntry.name, terminal)
+        TabbedSSHPanel.add(terminal)
 
         terminal.start()
 
