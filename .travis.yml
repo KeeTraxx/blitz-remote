@@ -2,7 +2,15 @@ language: java
 jdk:
   - openjdk8
 
-install: echo "skipped install phase - because kotlin fails"
+script: ./gradlew build -PoverrideVersion=${BUILDTAG} --continue
 
-script: ./gradlew build --continue
-
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file:
+    - build/distributions/blitz-remote-${BUILDTAG}.zip
+    - build/libs/blitz-remote-${BUILDTAG}.jar
+  skip_cleanup: true
+  on:
+    tags: true
+  overwrite: true
