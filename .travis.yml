@@ -6,9 +6,12 @@ script: ./gradlew build -PoverrideVersion=${BUILDTAG} --continue
 
 sudo: true
 
+before_deploy: find .
+
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
+  file_glob: true
   file:
     - "build/distributions/blitz-remote-${BUILDTAG}.zip"
     - "build/libs/blitz-remote-${BUILDTAG}.jar"
