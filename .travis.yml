@@ -15,8 +15,16 @@ deploy:
   api_key: $GITHUB_TOKEN
   file:
     - "build/distributions/blitz-remote-${TRAVIS_TAG}.zip"
-    - "build/libs/blitz-remote-${TRAVIS_TAG}.jar"
+    - "build/libs/blitz-remote-standalone-${TRAVIS_TAG}.jar"
   skip_cleanup: true
   on:
     tags: true
   overwrite: true
+  name: "blitz-remote ${TRAVIS_TAG}"
+  body: |
+    ## Run standalone jar
+    java -jar blitz-remote-standalone-${TRAVIS_TAG}.jar
+
+    ## Run application
+    unzip blitz-remote-${TRAVIS_TAG}.zip
+    ./blitz-remote-${TRAVIS_TAG}/bin/blitz-remote
