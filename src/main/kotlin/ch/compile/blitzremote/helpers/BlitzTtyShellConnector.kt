@@ -1,15 +1,31 @@
 package ch.compile.blitzremote.helpers
 
+import ch.compile.blitzremote.actions.ConnectAction
 import ch.compile.blitzremote.model.ConnectionEntry
 import com.jcraft.jsch.*
 import com.jediterm.ssh.jsch.JSchShellTtyConnector
 
-class BlitzTtyShellConnector(private val connectionEntry: ConnectionEntry) : JSchShellTtyConnector(connectionEntry.hostname, connectionEntry.port, connectionEntry.username, connectionEntry.password) {
+class BlitzTtyShellConnector(private val connectionEntry: ConnectionEntry) : JSchShellTtyConnector(connectionEntry.hostname, connectionEntry.port, connectionEntry.username, connectionEntry.password), SessionAvailableListener {
 
     private val sessionAvailableListeners = ArrayList<SessionAvailableListener>()
 
+    init {
+        this.addSessionAvailableListener(this)
+    }
+
     fun addSessionAvailableListener(sessionAvailableListener: SessionAvailableListener) {
         sessionAvailableListeners.add(sessionAvailableListener)
+    }
+
+    override fun onSessionAvailable(session: Session) {
+        if (connectionEntry.portforwarding != null) {
+            try {
+                ConnectAction.LOG.info("Setting up port forwarding - ${connectionEntry.portforwarding}")
+                session.setPortForwardingL(connectionEntry.portforwarding)
+            } catch (e: JSchException) {
+                ConnectAction.LOG.warn("Can't bind port! Ignoring port forward...", e)
+            }
+        }
     }
 
     override fun openChannel(session: Session): ChannelShell {
