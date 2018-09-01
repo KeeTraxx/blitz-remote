@@ -1,6 +1,7 @@
 package ch.compile.blitzremote.components
 
 import ch.compile.blitzremote.actions.CloseAction
+import ch.compile.blitzremote.actions.ManageSSHTunnelsAction
 import com.google.common.io.Resources
 import org.slf4j.LoggerFactory
 import java.awt.Component
@@ -58,9 +59,10 @@ class CloseableTab(var component: BlitzTerminal) : JPanel(FlowLayout(FlowLayout.
 
     override fun mousePressed(p0: MouseEvent?) {}
 
-    class ContextMenu(component: Component) : JPopupMenu("TabContextMenu") {
+    class ContextMenu(component: BlitzTerminal) : JPopupMenu("TabContextMenu") {
         init {
-            this.add(CloseAction(component as BlitzTerminal))
+            this.add(ManageSSHTunnelsAction(component))
+            this.add(CloseAction(component))
         }
     }
 }

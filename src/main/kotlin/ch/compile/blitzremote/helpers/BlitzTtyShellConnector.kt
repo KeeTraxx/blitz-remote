@@ -8,6 +8,7 @@ import com.jediterm.ssh.jsch.JSchShellTtyConnector
 class BlitzTtyShellConnector(private val connectionEntry: ConnectionEntry) : JSchShellTtyConnector(connectionEntry.hostname, connectionEntry.port, connectionEntry.username, connectionEntry.password), SessionAvailableListener {
 
     private val sessionAvailableListeners = ArrayList<SessionAvailableListener>()
+    var session: Session? = null
 
     init {
         this.addSessionAvailableListener(this)
@@ -18,6 +19,7 @@ class BlitzTtyShellConnector(private val connectionEntry: ConnectionEntry) : JSc
     }
 
     override fun onSessionAvailable(session: Session) {
+        this.session = session
         if (connectionEntry.portforwarding != null) {
             try {
                 ConnectAction.LOG.info("Setting up port forwarding - ${connectionEntry.portforwarding}")

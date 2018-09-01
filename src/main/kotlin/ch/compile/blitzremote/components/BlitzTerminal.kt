@@ -1,9 +1,11 @@
 package ch.compile.blitzremote.components
 
 import ch.compile.blitzremote.helpers.BlitzTtyShellConnector
+import ch.compile.blitzremote.helpers.SessionAvailableListener
 import ch.compile.blitzremote.interfaces.ConnectionListener
 import ch.compile.blitzremote.model.ConnectionEntry
 import ch.compile.blitzremote.settings.BlitzRemoteSettingsProvider
+import com.jcraft.jsch.Session
 import com.jediterm.terminal.ui.JediTermWidget
 import org.slf4j.LoggerFactory
 import kotlin.concurrent.thread
@@ -13,7 +15,9 @@ class BlitzTerminal(val connectionEntry: ConnectionEntry) : JediTermWidget(Blitz
         val LOG = LoggerFactory.getLogger(this::class.java)!!
     }
 
-    private val jSchShellTtyConnector = BlitzTtyShellConnector(connectionEntry)
+    val jSchShellTtyConnector = BlitzTtyShellConnector(connectionEntry)
+
+    var sshSession:Session? = null
 
     private var watchConnection = true
     private var isConnected = false
@@ -22,6 +26,7 @@ class BlitzTerminal(val connectionEntry: ConnectionEntry) : JediTermWidget(Blitz
 
     init {
         this.ttyConnector = jSchShellTtyConnector
+
         this.start()
 
         this.addConnectionListener(object : ConnectionListener {
