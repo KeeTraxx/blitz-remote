@@ -63,6 +63,10 @@ compileTestKotlin {
 }
 
 task bigJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Version': version,
+                'Main-Class': mainClassName
+    }
     baseName = "${project.name}-standalone"
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
