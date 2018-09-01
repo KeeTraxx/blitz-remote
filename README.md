@@ -12,6 +12,8 @@ Somewhat inspired by [mRemoteNG](https://github.com/mRemoteNG/mRemoteNG) (only f
  * Port forwarding to local ports
  * Identity files (*.pem) for key based authentication
  * Uses ~/.ssh/known_hosts and ~/.ssh/id_rsa as identity.
+ 
+![screenshot](docs/assets/blitz-remote-screenshot.png)
 
 ## Run
 
