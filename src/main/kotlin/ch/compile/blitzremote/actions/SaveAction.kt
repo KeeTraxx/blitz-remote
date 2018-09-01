@@ -1,9 +1,7 @@
 package ch.compile.blitzremote.actions
 
 import ch.compile.blitzremote.BlitzRemote
-import ch.compile.blitzremote.FILE
 import ch.compile.blitzremote.helpers.BlitzObjectMapper
-import ch.compile.blitzremote.model.ConnectionFolder
 import ch.compile.blitzremote.model.ConnectionFolderTreeNode
 import ch.compile.blitzremote.model.ConnectionModel
 import org.slf4j.LoggerFactory
@@ -18,16 +16,16 @@ class SaveAction : AbstractAction("Save") {
     }
 
     override fun actionPerformed(p0: ActionEvent?) {
-        LOG.debug("Saving to $FILE")
+        LOG.debug("Saving to ${BlitzRemote.instance?.FILE}")
         try {
-            val fos = FileOutputStream(FILE)
+            val fos = FileOutputStream(BlitzRemote.instance?.FILE)
 
             LOG.debug(BlitzObjectMapper.writeValueAsString((ConnectionModel.root as ConnectionFolderTreeNode).userObject))
 
             BlitzObjectMapper.writeValue(fos, (ConnectionModel.root as ConnectionFolderTreeNode).userObject)
             fos.close()
         } catch (e: Exception) {
-            JOptionPane.showMessageDialog(BlitzRemote.instance, "Couldn't save file: ${FILE.absoluteFile}", "Blitz Remote ERROR", JOptionPane.ERROR_MESSAGE)
+            JOptionPane.showMessageDialog(BlitzRemote.instance, "Couldn't save file: ${BlitzRemote.instance?.FILE?.absoluteFile}", "Blitz Remote ERROR", JOptionPane.ERROR_MESSAGE)
         }
     }
 

@@ -1,7 +1,6 @@
 package ch.compile.blitzremote.actions
 
 import ch.compile.blitzremote.BlitzRemote
-import ch.compile.blitzremote.FILE
 import ch.compile.blitzremote.helpers.BlitzObjectMapper
 import ch.compile.blitzremote.model.*
 import com.fasterxml.jackson.databind.JsonNode
@@ -19,7 +18,7 @@ class LoadAction(private val file: File) : AbstractAction("Load") {
 
     override fun actionPerformed(p0: ActionEvent?) {
         if (file.exists()) {
-            FILE = file
+            BlitzRemote.instance?.FILE = file
             LOG.info("Loading $file...")
             try {
                 val c = BlitzObjectMapper.readTree(file)

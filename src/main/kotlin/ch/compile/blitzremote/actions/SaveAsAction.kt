@@ -1,8 +1,6 @@
 package ch.compile.blitzremote.actions
 
 import ch.compile.blitzremote.BlitzRemote
-import ch.compile.blitzremote.FILE
-import ch.compile.blitzremote.model.ConnectionFolder
 import org.slf4j.LoggerFactory
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
@@ -16,17 +14,17 @@ class SaveAsAction : AbstractAction("Save As...") {
 
     override fun actionPerformed(p0: ActionEvent?) {
         LOG.debug("Opening FileChooser")
-        val folder = JFileChooser(FILE.parentFile)
-        folder.fileFilter = FileNameExtensionFilter("JSON files", "json")
-        folder.fileSelectionMode = JFileChooser.FILES_ONLY
-        when (folder.showDialog(BlitzRemote.instance, "Save")) {
+        val fileChooser = JFileChooser(BlitzRemote.instance?.FILE?.parentFile)
+        fileChooser.fileFilter = FileNameExtensionFilter("JSON files", "json")
+        fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
+        when (fileChooser.showDialog(BlitzRemote.instance, "Save")) {
             JFileChooser.CANCEL_OPTION -> {
                 LOG.debug("USER CANCELLED")
             }
 
             JFileChooser.APPROVE_OPTION -> {
-                LOG.debug("User selected FILE" + folder.selectedFile)
-                FILE = folder.selectedFile
+                LOG.debug("User selected FILE" + fileChooser.selectedFile)
+                BlitzRemote.instance?.FILE = fileChooser.selectedFile
                 SaveAction().actionPerformed(null)
             }
         }

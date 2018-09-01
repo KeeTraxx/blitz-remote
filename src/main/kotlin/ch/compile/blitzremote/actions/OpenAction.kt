@@ -1,7 +1,6 @@
 package ch.compile.blitzremote.actions
 
 import ch.compile.blitzremote.BlitzRemote
-import ch.compile.blitzremote.FILE
 import org.slf4j.LoggerFactory
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
@@ -15,7 +14,7 @@ class OpenAction : AbstractAction("Open...") {
 
     override fun actionPerformed(p0: ActionEvent?) {
         LOG.debug("Opening FileChooser...")
-        val folder = JFileChooser(FILE.parentFile)
+        val folder = JFileChooser(BlitzRemote.instance?.FILE)
         folder.fileFilter = FileNameExtensionFilter("JSON files", "json")
         folder.fileSelectionMode = JFileChooser.FILES_ONLY
         when (folder.showDialog(BlitzRemote.instance, "Open")) {
