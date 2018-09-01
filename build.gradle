@@ -7,12 +7,14 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        // classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
     }
 
 }
 
 group 'ch.compile'
+
+apply plugin: 'application'
+apply plugin: 'kotlin'
 
 if (project.hasProperty("overrideVersion")) {
     version project.overrideVersion ?: "latest"
@@ -20,11 +22,14 @@ if (project.hasProperty("overrideVersion")) {
     version '0.1-SNAPSHOT'
 }
 
-// apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'application'
-apply plugin: 'kotlin'
-
 mainClassName = 'ch.compile.blitzremote.BlitzRemoteKt'
+
+jar {
+    manifest {
+        attributes 'Implementation-Version': version,
+                'Main-Class': mainClassName
+    }
+}
 
 repositories {
     mavenCentral()
@@ -56,10 +61,6 @@ compileTestKotlin {
 }
 
 task bigJar(type: Jar) {
-    manifest {
-        attributes 'Implementation-Version': version,
-                'Main-Class': mainClassName
-    }
     baseName = "${project.name}-standalone"
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
