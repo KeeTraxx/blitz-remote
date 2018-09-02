@@ -7,15 +7,15 @@ import com.jediterm.ssh.jsch.JSchShellTtyConnector
 
 class BlitzTtyShellConnector(private val connectionEntry: ConnectionEntry) : JSchShellTtyConnector(connectionEntry.hostname, connectionEntry.port, connectionEntry.username, connectionEntry.password), SessionAvailableListener {
 
-    private val sessionAvailableListeners = ArrayList<SessionAvailableListener>()
+    private val sessionAvailableListeners = ArrayList<((Session) -> Unit)>()
     var session: Session? = null
 
     init {
-        this.addSessionAvailableListener(this)
+        this.addSessionAvailableListener(listener = this::onSessionAvailable)
     }
 
-    fun addSessionAvailableListener(sessionAvailableListener: SessionAvailableListener) {
-        sessionAvailableListeners.add(sessionAvailableListener)
+    fun addSessionAvailableListener(listener: (Session) -> Unit) {
+        sessionAvailableListeners.add(listener)
     }
 
     override fun onSessionAvailable(session: Session) {
@@ -31,7 +31,7 @@ class BlitzTtyShellConnector(private val connectionEntry: ConnectionEntry) : JSc
     }
 
     override fun openChannel(session: Session): ChannelShell {
-        sessionAvailableListeners.forEach { it.onSessionAvailable(session) }
+        sessionAvailableListeners.forEach { it.invoke(session) }
         if (connectionEntry.httpProxy != null) {
             session.setProxy(ProxyHTTP(connectionEntry.httpProxy))
         }

@@ -1,7 +1,6 @@
 package ch.compile.blitzremote.components
 
 import ch.compile.blitzremote.helpers.BlitzTtyShellConnector
-import ch.compile.blitzremote.helpers.SessionAvailableListener
 import ch.compile.blitzremote.interfaces.ConnectionListener
 import ch.compile.blitzremote.model.ConnectionEntry
 import ch.compile.blitzremote.settings.BlitzRemoteSettingsProvider
@@ -15,7 +14,7 @@ class BlitzTerminal(val connectionEntry: ConnectionEntry) : JediTermWidget(Blitz
         val LOG = LoggerFactory.getLogger(this::class.java)!!
     }
 
-    val jSchShellTtyConnector = BlitzTtyShellConnector(connectionEntry)
+    val sshConnector = BlitzTtyShellConnector(connectionEntry)
 
     var sshSession:Session? = null
 
@@ -25,7 +24,9 @@ class BlitzTerminal(val connectionEntry: ConnectionEntry) : JediTermWidget(Blitz
     private val connectionListeners = ArrayList<ConnectionListener>()
 
     init {
-        this.ttyConnector = jSchShellTtyConnector
+        this.ttyConnector = sshConnector
+
+        this.sshConnector.addSessionAvailableListener { session -> sshSession = session }
 
         this.start()
 
@@ -40,8 +41,8 @@ class BlitzTerminal(val connectionEntry: ConnectionEntry) : JediTermWidget(Blitz
         thread(start = true) {
             while (watchConnection) {
                 Thread.sleep(100)
-                if (isConnected != jSchShellTtyConnector.isConnected) {
-                    isConnected = jSchShellTtyConnector.isConnected
+                if (isConnected != sshConnector.isConnected) {
+                    isConnected = sshConnector.isConnected
                     LOG.info("Connection state changed ${connectionEntry.hostname}: connected = $isConnected")
                     connectionListeners.forEach { it.onConnectionStateChanged(isConnected) }
                 }
