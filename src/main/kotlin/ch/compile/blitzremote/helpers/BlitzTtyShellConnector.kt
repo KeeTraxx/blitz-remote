@@ -1,40 +1,44 @@
 package ch.compile.blitzremote.helpers
 
-import ch.compile.blitzremote.actions.ConnectAction
 import ch.compile.blitzremote.model.ConnectionEntry
 import com.jcraft.jsch.*
 import com.jediterm.ssh.jsch.JSchShellTtyConnector
+import org.slf4j.LoggerFactory
+import java.util.*
 
-class BlitzTtyShellConnector(private val connectionEntry: ConnectionEntry) : JSchShellTtyConnector(connectionEntry.hostname, connectionEntry.port, connectionEntry.username, connectionEntry.password), SessionAvailableListener {
-
+class BlitzTtyShellConnector(private val connectionEntry: ConnectionEntry) : JSchShellTtyConnector(connectionEntry.hostname, connectionEntry.port, connectionEntry.username, connectionEntry.password) {
+    companion object {
+        val LOG = LoggerFactory.getLogger(this::class.java)!!
+    }
     private val sessionAvailableListeners = ArrayList<((Session) -> Unit)>()
     var session: Session? = null
-
-    init {
-        this.addSessionAvailableListener(listener = this::onSessionAvailable)
-    }
 
     fun addSessionAvailableListener(listener: (Session) -> Unit) {
         sessionAvailableListeners.add(listener)
     }
 
-    override fun onSessionAvailable(session: Session) {
+    override fun configureSession(session: Session, config: Properties) {
+        super.configureSession(session, config)
+
         this.session = session
+
+        if (connectionEntry.httpProxy != null) {
+            LOG.warn("Setting HTTP PROXY to ${connectionEntry.httpProxy}")
+            session.setProxy(ProxyHTTP(connectionEntry.httpProxy))
+        }
+
         if (connectionEntry.portforwarding != null) {
             try {
-                ConnectAction.LOG.info("Setting up port forwarding - ${connectionEntry.portforwarding}")
+                LOG.info("Setting up port forwarding - ${connectionEntry.portforwarding}")
                 session.setPortForwardingL(connectionEntry.portforwarding)
             } catch (e: JSchException) {
-                ConnectAction.LOG.warn("Can't bind port! Ignoring port forward...", e)
+                LOG.warn("Can't bind port! Ignoring port forwarding...", e)
             }
         }
     }
 
     override fun openChannel(session: Session): ChannelShell {
         sessionAvailableListeners.forEach { it.invoke(session) }
-        if (connectionEntry.httpProxy != null) {
-            session.setProxy(ProxyHTTP(connectionEntry.httpProxy))
-        }
         return super.openChannel(session)
     }
 
