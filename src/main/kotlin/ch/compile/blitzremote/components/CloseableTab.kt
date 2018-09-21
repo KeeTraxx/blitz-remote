@@ -2,7 +2,6 @@ package ch.compile.blitzremote.components
 
 import ch.compile.blitzremote.actions.CloseAction
 import ch.compile.blitzremote.actions.ManageSSHTunnelsAction
-import com.google.common.io.Resources
 import org.slf4j.LoggerFactory
 import java.awt.Component
 import java.awt.FlowLayout
@@ -18,7 +17,7 @@ class CloseableTab(var component: BlitzTerminal) : JPanel(FlowLayout(FlowLayout.
 
     private val label = JLabel(component.connectionEntry.name)
 
-    private val close = JLabel(ImageIcon(Resources.getResource("icons/icon_close.png")))
+    private val close = JLabel(ImageIcon(ClassLoader.getSystemResource("icons/icon_close.png")))
 
     private val contextMenu = ContextMenu(component)
 
@@ -47,12 +46,15 @@ class CloseableTab(var component: BlitzTerminal) : JPanel(FlowLayout(FlowLayout.
         if (SwingUtilities.isLeftMouseButton(mouseEvent) && mouseEvent.source == close) {
             LOG.debug("Close button on tab clicked.")
             CloseAction(component).actionPerformed(null)
+            return
         }
 
         if (SwingUtilities.isRightMouseButton(mouseEvent)) {
             LOG.debug("Showing context menu...")
             contextMenu.show(mouseEvent.source as Component, mouseEvent.x, mouseEvent.y)
         }
+
+        TabbedSSHPanel.selectedIndex = TabbedSSHPanel.indexOfComponent(component)
     }
 
     override fun mouseExited(p0: MouseEvent?) {}
