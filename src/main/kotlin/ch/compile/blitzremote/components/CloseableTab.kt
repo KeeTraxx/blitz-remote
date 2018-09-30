@@ -1,6 +1,7 @@
 package ch.compile.blitzremote.components
 
 import ch.compile.blitzremote.actions.CloseAction
+import ch.compile.blitzremote.actions.DownloadAction
 import ch.compile.blitzremote.actions.ManageSSHTunnelsAction
 import org.slf4j.LoggerFactory
 import java.awt.Component
@@ -65,6 +66,7 @@ class CloseableTab(var component: BlitzTerminal) : JPanel(FlowLayout(FlowLayout.
         init {
             this.add(ManageSSHTunnelsAction(component))
             this.add(CloseAction(component))
+            this.add(DownloadAction(component))
         }
     }
 }

@@ -7,7 +7,7 @@ import javax.swing.event.TableModelListener
 import javax.swing.table.TableModel
 
 class SshTunnelEditor(blitzTerminal: BlitzTerminal) : JDialog(BlitzRemote.instance) {
-    private val list = JTable(PortforwardingTableModel(blitzTerminal.sshSession?.portForwardingL ?: emptyArray()))
+    private val list = JTable(PortforwardingTableModel(blitzTerminal.session?.portForwardingL ?: emptyArray()))
     init {
         this.setSize(640, 480)
         this.add(list)

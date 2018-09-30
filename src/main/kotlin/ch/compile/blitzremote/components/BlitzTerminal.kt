@@ -6,17 +6,24 @@ import ch.compile.blitzremote.model.ConnectionEntry
 import ch.compile.blitzremote.settings.BlitzRemoteSettingsProvider
 import com.jcraft.jsch.Session
 import com.jediterm.terminal.ui.JediTermWidget
+import com.jediterm.terminal.ui.TerminalWidget
+import com.jediterm.terminal.ui.TerminalWidgetListener
 import org.slf4j.LoggerFactory
+import java.awt.BorderLayout
+import javax.swing.JLabel
+import javax.swing.JPanel
 import kotlin.concurrent.thread
 
-class BlitzTerminal(val connectionEntry: ConnectionEntry) : JediTermWidget(BlitzRemoteSettingsProvider()) {
+class BlitzTerminal(val connectionEntry: ConnectionEntry) : JPanel() {
     companion object {
         val LOG = LoggerFactory.getLogger(this::class.java)!!
     }
 
+    val terminal = JediTermWidget(BlitzRemoteSettingsProvider())
+
     val sshConnector = BlitzTtyShellConnector(connectionEntry)
 
-    var sshSession:Session? = null
+    var session:Session? = null
 
     private var watchConnection = true
     private var isConnected = false
@@ -24,11 +31,18 @@ class BlitzTerminal(val connectionEntry: ConnectionEntry) : JediTermWidget(Blitz
     private val connectionListeners = ArrayList<ConnectionListener>()
 
     init {
-        this.ttyConnector = sshConnector
+        layout = BorderLayout()
+        this.add(terminal, BorderLayout.CENTER)
+        terminal.addListener {
+            LOG.debug("Close has been called on ${connectionEntry.name}")
+            watchConnection = false
+            TabbedSSHPanel.remove(this@BlitzTerminal)
+        }
+        terminal.ttyConnector = sshConnector
 
-        this.sshConnector.addSessionAvailableListener { session -> sshSession = session }
+        this.sshConnector.addSessionAvailableListener { session -> this.session = session }
 
-        this.start()
+        terminal.start()
 
         this.addConnectionListener(object : ConnectionListener {
             override fun onConnectionStateChanged(isConnected: Boolean) {
@@ -53,12 +67,4 @@ class BlitzTerminal(val connectionEntry: ConnectionEntry) : JediTermWidget(Blitz
     fun addConnectionListener(connectionListener: ConnectionListener) {
         connectionListeners.add(connectionListener)
     }
-
-    override fun close() {
-        LOG.debug("Close has been called on ${connectionEntry.name}")
-        watchConnection = false
-        super.close()
-        TabbedSSHPanel.remove(this)
-    }
-
 }

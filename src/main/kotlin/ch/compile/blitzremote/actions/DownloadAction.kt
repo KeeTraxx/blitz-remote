@@ -1,133 +1,125 @@
 package ch.compile.blitzremote.actions
 
 import ch.compile.blitzremote.BlitzRemote
-import ch.compile.blitzremote.model.ConnectionEntry
-import com.jcraft.jsch.*
+import ch.compile.blitzremote.components.BlitzTerminal
+import com.jcraft.jsch.ChannelSftp
+import com.jcraft.jsch.SftpProgressMonitor
 import org.slf4j.LoggerFactory
+import java.awt.BorderLayout
+import java.awt.Desktop
 import java.awt.event.ActionEvent
 import java.io.File
+import java.nio.file.Paths
 import java.util.*
 import javax.swing.AbstractAction
 import javax.swing.JOptionPane
+import javax.swing.JProgressBar
+import javax.swing.SwingWorker
 import kotlin.collections.ArrayList
 
-class DownloadAction(private val connectionEntry: ConnectionEntry) : AbstractAction("Download from remote...") {
+class DownloadAction(private val blitzTerminal: BlitzTerminal) : AbstractAction("Download from remote...") {
     companion object {
         val LOG = LoggerFactory.getLogger(this::class.java)!!
     }
 
-    var channelSftp: ChannelSftp = ChannelSftp()
-
-    var downloadDir = File(System.getProperty("user.home") + "/Downloads/blitz-remote")
-
     override fun actionPerformed(p0: ActionEvent?) {
-        val file = JOptionPane.showInputDialog(BlitzRemote.instance, "Please provide a path", "Download from remote...", JOptionPane.QUESTION_MESSAGE, null, null, "./.profile")
-        LOG.debug("User selected $file")
-        val jsch = JSch()
-        jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts")
+        val file = JOptionPane.showInputDialog(BlitzRemote.instance, "Please provide a path (relative to home directory)", "Download from remote...", JOptionPane.QUESTION_MESSAGE, null, null, "") as String
+        blitzTerminal.add(DownloadBar(file), BorderLayout.SOUTH)
+        blitzTerminal.revalidate()
+    }
 
-        if (connectionEntry.identity != null) {
-            try {
-                val f = connectionEntry.identity
-                val kp = KeyPair.load(jsch, f)
-                if (kp.isEncrypted) {
-                    val passphrase = JOptionPane.showInputDialog(BlitzRemote.instance, "Please enter passphrase for $f", "Passphrase needed", JOptionPane.QUESTION_MESSAGE, null, null, "")
-                    if (passphrase is String) {
-                        jsch.addIdentity(f, passphrase)
+    inner class DownloadBar(val file: String) : JProgressBar() {
+        var downloadDir = Paths.get(System.getProperty("user.home"), "Downloads", "blitz-remote", blitzTerminal.connectionEntry.name)!!
+        private val channelSftp: ChannelSftp = blitzTerminal.session!!.openChannel("sftp") as ChannelSftp
+
+        inner class BackgroundDownloader : SwingWorker<Unit, BackgroundDownloader.GenericSftpMonitor>() {
+            override fun doInBackground() {
+                progress = 0
+                val list = fileList(this@DownloadBar.file)
+
+                list.forEachIndexed { index, file ->
+                    val local = File("$downloadDir/$file")
+                    local.parentFile.mkdirs()
+                    val monitor = GenericSftpMonitor()
+                    channelSftp.get(file, local.path, monitor)
+                    progress = 100 * index / list.size
+                }
+
+                progress = 100
+            }
+
+            override fun done() {
+                Desktop.getDesktop().open(downloadDir.toFile())
+            }
+
+            override fun process(p0: MutableList<GenericSftpMonitor>) {
+                val monitor = p0.first()
+                val perc = 100 * monitor.pos / monitor.max.toDouble()
+                this@DownloadBar.progressString = String.format("Transferring %s (%.2f%%)", monitor.src.substringAfterLast('/'), perc)
+                this@DownloadBar.repaint()
+                this@DownloadBar.revalidate()
+            }
+
+            private fun fileList(file: String): List<String> {
+                val list = ArrayList<String>()
+                val attrs = channelSftp.stat(file)
+                if (attrs.isDir) {
+                    val fileList = channelSftp.ls(file) as Vector<*>
+                    channelSftp.cd(file)
+                    fileList.filter { it is ChannelSftp.LsEntry && !it.filename.startsWith('.') }.forEach {
+                        if (it is ChannelSftp.LsEntry && !it.filename.startsWith('.')) {
+                            list.addAll(fileList(it.filename))
+                        }
                     }
+                    channelSftp.cd("..")
                 } else {
-                    jsch.addIdentity(f)
+                    list.add("${channelSftp.pwd()}/$file")
                 }
-            } catch (e: JSchException) {
-                System.err.println("Error adding identity: " + connectionEntry.identity)
+                return list
             }
-        } else {
-            try {
-                val f = System.getProperty("user.home") + "/.ssh/id_rsa"
-                val kp = KeyPair.load(jsch, f)
-                if (kp.isEncrypted) {
-                    val passphrase = JOptionPane.showInputDialog(BlitzRemote.instance, "Please enter passphrase for $f", "Passphrase needed", JOptionPane.QUESTION_MESSAGE, null, null, "")
-                    if (passphrase is String) {
-                        jsch.addIdentity(f, passphrase)
+
+            inner class GenericSftpMonitor : SftpProgressMonitor {
+                var op: Int = 0
+                var src: String = ""
+                var dest: String = ""
+                var max: Long = 0
+                var pos: Long = 0
+
+                override fun count(count: Long): Boolean {
+                    pos += count
+                    this@BackgroundDownloader.publish(this)
+                    return true
+                }
+
+                override fun end() {
+                    this@BackgroundDownloader.publish(this)
+                }
+
+                override fun init(op: Int, src: String, dest: String, max: Long) {
+                    this.op = op
+                    this.src = src
+                    this.dest = dest
+                    this.max = max
+                    this@BackgroundDownloader.publish(this)
+                }
+            }
+        }
+
+        init {
+            channelSftp.connect()
+            this.isStringPainted = true
+            this.progressString = "Getting file list..."
+            val backgroundDownloader = BackgroundDownloader()
+            backgroundDownloader.addPropertyChangeListener {
+                when (it.propertyName) {
+                    "progress" -> {
+                        this.value = it.newValue as Int
                     }
-                } else {
-                    jsch.addIdentity(f)
-                }
-            } catch (e: JSchException) {
-                System.err.println("Error adding identity: " + System.getProperty("user.home") + "/.ssh/id_rsa")
-            }
-        }
-
-        val session = jsch.getSession(connectionEntry.username, connectionEntry.hostname, connectionEntry.port)
-        session.connect()
-
-        channelSftp = session.openChannel("sftp") as ChannelSftp
-        channelSftp.connect()
-        val list = fileList(file as String)
-        list.forEach {
-            download(it)
-        }
-        LOG.debug("DONE DOWNLOADING!")
-    }
-
-    private fun fileList(file: String): List<String> {
-        val list = ArrayList<String>()
-        val attrs = channelSftp.stat(file)
-        if (attrs.isDir) {
-            val fileList = channelSftp.ls(file) as Vector<ChannelSftp.LsEntry>
-            channelSftp.cd(file)
-            fileList.filter { !it.filename.startsWith('.') }.forEach {
-                if (!it.filename.startsWith('.')) {
-                    list.addAll(fileList(it.filename))
                 }
             }
-            channelSftp.cd("..")
-        } else {
-            list.add("${channelSftp.pwd()}/$file")
+            backgroundDownloader.execute()
         }
-        return list
     }
 
-    private fun download(file: String) {
-        val local = File("${downloadDir.path}/${connectionEntry.name}/$file")
-        LOG.debug("Would download to $local")
-        local.parentFile.mkdirs()
-        channelSftp.get(file, local.path, DownloadMonitor())
-        /* channelSftp.lcd(downloadDir.path)
-        channelSftp.get(file)*/
-    }
 
-    class DownloadMonitor : SftpProgressMonitor {
-        var op: Int = 0
-        var src: String? = null
-        var dest: String? = null
-        var max: Long = 0
-        var pos: Long = 0
-
-        override fun count(count: Long): Boolean {
-            pos += count
-            val progress = String.format("%5.2f", pos / this.max.toDouble() * 100)
-            LOG.debug("$src ($progress)")
-            return true
-        }
-
-        override fun end() {
-            when (op) {
-                SftpProgressMonitor.GET -> LOG.debug("Finished download: $src")
-                SftpProgressMonitor.PUT -> LOG.debug("Finished upload: $src")
-            }
-        }
-
-        override fun init(op: Int, src: String, dest: String, max: Long) {
-            this.op = op
-            this.src = src
-            this.dest = dest
-            this.max = max
-            when (op) {
-                SftpProgressMonitor.GET -> LOG.debug("Starting download: $src => $dest ($max)")
-                SftpProgressMonitor.PUT -> LOG.debug("Starting upload: $src => $dest ($max)")
-            }
-        }
-
-    }
 }

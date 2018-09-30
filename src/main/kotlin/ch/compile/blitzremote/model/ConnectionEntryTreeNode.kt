@@ -7,5 +7,5 @@ import javax.swing.Action
 class ConnectionEntryTreeNode(name: String) : AbstractBlitzTreeNode(ConnectionEntry(name), false) {
 
     override val actions: List<Action>
-        get() = super.actions + listOf(ConnectAction(this.userObject as ConnectionEntry), DownloadAction(this.userObject as ConnectionEntry))
+        get() = super.actions + listOf(ConnectAction(this.userObject as ConnectionEntry))
 }
