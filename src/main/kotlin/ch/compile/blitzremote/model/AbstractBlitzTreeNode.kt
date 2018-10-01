@@ -1,5 +1,6 @@
 package ch.compile.blitzremote.model
 
+import ch.compile.blitzremote.actions.DeleteAction
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.io.Serializable
@@ -9,7 +10,7 @@ import javax.swing.tree.DefaultMutableTreeNode
 @JsonInclude(JsonInclude.Include.NON_NULL)
 abstract class AbstractBlitzTreeNode(obj: Any, hasChildren: Boolean) : DefaultMutableTreeNode(obj, hasChildren), Serializable {
     open val actions: List<Action>
-        get() = listOf()
+        get() = listOf(DeleteAction(this))
 
     override fun toString(): String {
         return this.userObject.toString()
