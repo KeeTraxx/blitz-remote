@@ -35,7 +35,7 @@ object ConnectionSelector : JTree(ConnectionModel) {
 
                     contextMenu.show(this@ConnectionSelector, p0.x, p0.y)
 
-                    // this@ConnectionSelector.startEditingAtPath(path)
+                    // this@ConnectionSelector.startEditingAtPath(basePath)
                 }
 
                 if (p0.button == MouseEvent.BUTTON1 && p0.clickCount > 1 && entry is ConnectionEntryTreeNode) {

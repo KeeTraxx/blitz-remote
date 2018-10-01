@@ -23,7 +23,7 @@ class DownloadAction(private val blitzTerminal: BlitzTerminal) : AbstractAction(
     }
 
     override fun actionPerformed(p0: ActionEvent?) {
-        val file = JOptionPane.showInputDialog(BlitzRemote.instance, "Please provide a path (relative to home directory)", "Download from remote...", JOptionPane.QUESTION_MESSAGE, null, null, "") as String
+        val file = JOptionPane.showInputDialog(BlitzRemote.instance, "Please provide a basePath (relative to home directory)", "Download from remote...", JOptionPane.QUESTION_MESSAGE, null, null, "") as String
         blitzTerminal.add(DownloadBar(file), BorderLayout.SOUTH)
         blitzTerminal.revalidate()
     }
