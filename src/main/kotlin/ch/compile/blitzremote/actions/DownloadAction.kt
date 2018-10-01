@@ -49,6 +49,7 @@ class DownloadAction(private val blitzTerminal: BlitzTerminal) : AbstractAction(
             }
 
             override fun done() {
+                this@DownloadBar.progressString = "Finished download to $downloadDir"
                 Desktop.getDesktop().open(downloadDir.toFile())
             }
 

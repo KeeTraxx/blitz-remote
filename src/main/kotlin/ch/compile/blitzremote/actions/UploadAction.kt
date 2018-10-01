@@ -83,6 +83,7 @@ class UploadAction(private val blitzTerminal: BlitzTerminal) : AbstractAction("U
             }
 
             override fun done() {
+                this@UploadBar.progressString = "Upload finished to ~/blitz-uploads"
             }
 
             override fun process(p0: MutableList<GenericSftpMonitor>) {
